@@ -4,6 +4,7 @@
 #include <tabulate/table.hpp>
 #include <xlnt/xlnt.hpp>
 #include <exception>
+#include <ctime>
 using namespace std;
 using namespace tabulate;
 // Standard colors
@@ -26,7 +27,7 @@ using namespace tabulate;
 #define bold_white(text) "\033[1;37m" text "\033[0m"
 
 void pressEnter(){
-    cout<<"Press Enter to Coutinue : ";
+    cout<<bold_magenta(">> Press Enter to Coutinue : ");
     cin.ignore();
 }
 class Client
@@ -93,21 +94,12 @@ void printEmployeeTable(const vector<Employee> &employee)
     }
 
     table[0].format().font_style({FontStyle::bold}).font_align(FontAlign::center).border_bottom("─");
-
+    table[0].format().font_color(Color::cyan);
     for (size_t i = 1; i < table.size(); ++i)
     {
         table[i].format().font_align(FontAlign::center);
     }
-    table.format()
-        .border("│")
-        .corner("+")
-        .padding_left(1)
-        .padding_right(1)
-        .border_top("═")
-        .border_bottom("═")
-        .border_left("║")
-        .border_right("║");
-
+    
     cout << table << endl;
 }
 
@@ -208,7 +200,7 @@ void deleteClient(vector<Client> &clients, vector<Employee> &employee,
                   const string &clientFile, const string &assignFile)
 {
     string delId;
-    cout << "Enter Client ID to delete: ";
+    cout <<bold_blue (">> Enter Client ID to delete: ");
     getline(cin, delId);
 
     auto clientIt = find_if(clients.begin(), clients.end(), [&](const Client &c)
@@ -220,16 +212,18 @@ void deleteClient(vector<Client> &clients, vector<Employee> &employee,
         return;
     }
 
-    cout << "Client found:\n";
+    cout <<green( "Client found:\n");
     Table info;
     info.add_row({"ID", "Name", "Contact", "Company", "Address", "Service"});
     info.add_row({clientIt->getId(), clientIt->getName(), clientIt->getContact(),
                   clientIt->getCompany(), clientIt->getAddress(), clientIt->getService()});
     info[0].format().font_style({FontStyle::bold});
+    info[0].format().font_color(Color::cyan);
     cout << info << endl;
-
+    
     char confirm;
-    cout << "Are you sure you want to delete this client and all related employee? (y/n): ";
+    cout <<blue( ">> Are you sure you want to delete this client and all related employee? ");
+    cout <<bold_magenta("(y/n):");
     cin >> confirm;
     cin.ignore();
 
@@ -244,7 +238,67 @@ void deleteClient(vector<Client> &clients, vector<Employee> &employee,
                    employee.end());
     writeClientsToExcel(clientFile, clients);
     writeemployeeToExcel(assignFile, employee);
+    cout<<endl;
     cout << green("✅ Client and related employee deleted successfully!\n");
 }
+// style
+void printAppLogo()
+{
+    cout <<bold_red (R"(
+   ____ _ _            _     _                                    
+  / ___| (_)_ __   ___| |_  | |  
+ | |   | | | '_ \ / _ \ __| | | 
+ | |___| | | | | |  __/ |_  | |                       
+  \____|_|_|_| |_|\___|\__| | |                                                                
+    )")bold_green (R"(                        | |
+                            | |  __  __                                  
+                            | | |  \/  | __ _ _ __ ___   __ _  __ _  ___ 
+                            | | | |\/| |/ _` | '_ ` _ \ / _` |/ _` |/ _ \
+                            | | | |  | | (_| | | | | | | (_| | (_| |  __/
+                            | | |_|  |_|\__,_|_| |_| |_|\__,_|\__, |\___|
+                            |_|                               |___/      
+    )") << "\n";    
+}
+void printtHeader(const std::string &title, const std::string &username = "Admin")
+{
+    // Get current date and time
+    time_t now = time(nullptr);
+    tm *ltm = localtime(&now);
 
+    char timeBuf[32];
+    strftime(timeBuf, sizeof(timeBuf), "%d-%m-%Y %H:%M:%S", ltm);
+
+    int width = 50;
+    std::string border = "+" + std::string(width, '=') + "+";
+
+    std::cout << "\n\033[1;36m";  // Start cyan bold
+    std::cout << border << "\n";
+
+    // Centered title
+    int padding = (width - title.length()) / 2;
+    std::cout << "|"
+              << std::string(padding, ' ') << title << std::string(width - padding - title.length(), ' ')
+              << "|\n";
+
+    std::cout << border << "\n";
+
+    // Left-aligned user and date
+    std::string userLine = "| [User]  " + username;
+    userLine += std::string(width - userLine.length() + 1, ' ') + "|";
+    std::cout << userLine << "\n";
+
+    std::string dateLine = "| [Date]  " + std::string(timeBuf);
+    dateLine += std::string(width - dateLine.length() + 1, ' ') + "|";
+    std::cout << dateLine << "\n";
+
+    std::cout << border << "\033[0m\n\n";  // End color
+}
+
+void printHeader(const string &title)
+{
+    string border = "+" + string(title.length() + 4, '=') + "+";
+    cout << "\n\033[1;36m" << border << "\n";
+    cout << "|  " << title << "  |\n";
+    cout << border << "\033[0m\n\n";
+}
 #endif

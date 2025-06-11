@@ -1,14 +1,10 @@
-#include <iostream>
-#include <tabulate/table.hpp>
-#include <xlnt/xlnt.hpp>
-#include <exception>
-#include "function.h"
 
+#include "function.h"
 int main()
 {
     system("cls");
     string clientFile = "clients.xlsx";
-    string assignFile = "employee.xlsx";
+    string empFile = "employee.xlsx";
 
     vector<string> menu = {
         "Add Client Record",
@@ -20,22 +16,30 @@ int main()
         "Exit"};
 
     vector<Client> clients = readClientsFromExcel(clientFile);
-    vector<Employee> employee = reademployeeFromExcel(assignFile);
+    vector<Employee> employee = reademployeeFromExcel(empFile);
 
     int option;
     do
     {
         system("cls");
         Table t;
-        cout << "\033[1;36m=== Client Management System ===\033[0m\n";
+        printAppLogo();
         t.add_row({"No", "Menu"});
         for (int i = 0; i < menu.size(); i++)
         {
             t.add_row({to_string(i + 1), menu[i]});
         }
-        t[0].format().font_style({FontStyle::bold});
+        t[0].format().font_style({FontStyle::bold}).font_align(FontAlign::center);
+        t[0].format().font_color(Color::yellow);
+        for (int i = 1; i <= menu.size(); i++)
+        {
+            if (i == 7) // Exit option
+                t[i][1].format().font_color(Color::red);
+            else
+                t[i][1].format().font_color(Color::cyan);
+        }
         cout << t << endl;
-        cout << bold_blue("Enter choice: ");
+        cout << bold_blue(">> Enter choice: ");
         cin >> option;
         cin.ignore();
 
@@ -44,6 +48,7 @@ int main()
         case 1:
         {
             system("cls");
+            printtHeader("📋 Add Client Record");
             string id, name, contact, company, address, service;
             cout << "ID: ";
             getline(cin, id);
@@ -59,45 +64,54 @@ int main()
             getline(cin, service);
             clients.emplace_back(id, name, contact, company, address, service);
             writeClientsToExcel(clientFile, clients);
+            cout << endl;
             cout << green("✅ Client added successfully!") << endl;
+            pressEnter();
             break;
         }
         case 2:
         {
             system("cls");
+            printHeader("Add Employee to Client");
             string clientId, empName;
             cout << "Client ID: ";
             getline(cin, clientId);
             cout << "Employee Name: ";
             getline(cin, empName);
             employee.emplace_back(clientId, empName);
-            writeemployeeToExcel(assignFile, employee);
-            cout << green("✅ Employee assigned successfully!") << endl;
+            writeemployeeToExcel(empFile, employee);
+            cout << endl;
+            cout << green("✅ Employee emped successfully!") << endl;
             pressEnter();
             break;
         }
         case 3:
         {
             system("cls");
+            printHeader("Client Lists");
             printClientTable(clients);
             pressEnter();
-            break;    
+            break;
         }
         case 4:
             system("cls");
+            printHeader("Show Employee");
             printEmployeeTable(employee);
             pressEnter();
             break;
         case 5:
             system("cls");
-            deleteClient(clients, employee, clientFile, assignFile);
-           pressEnter();
+            printHeader("Dellete Client");
+            deleteClient(clients, employee, clientFile, empFile);
+            pressEnter();
             break;
         case 6:
         {
             system("cls");
+            printHeader("Search Client by ID or Name");
+
             string query;
-            cout << "Enter Client ID or Name to search: ";
+            cout << bold_blue("Enter Client ID or Name to search: ");
             getline(cin, query);
             bool found = false;
             for (const auto &c : clients)
@@ -114,12 +128,12 @@ int main()
                 }
             }
             if (!found)
-                cout << "\033[1;31m❌ No client found with that ID or Name.\033[0m\n";
+                cout << "\033[1;31m❌ No client found with that ID or Name!!\033[0m\n";
             pressEnter();
             break;
         }
         default:
-            cout << "Program closed!!\n";
+            cout <<red("Program closed!!\n");
             break;
         }
     } while (option != 7);
