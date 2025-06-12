@@ -33,18 +33,15 @@ void pressEnter(){
 class Client
 {
 private:
-    string id, name, contact, company, address, service;
+    string id, name, contact;
 
 public:
-    Client(string id, string name, string contact, string company, string address, string service)
-        : id(id), name(name), contact(contact), company(company), address(address), service(service) {}
+    Client(string id, string name, string contact )
+        : id(id), name(name), contact(contact) {}
 
     string getId() const { return id; }
     string getName() const { return name; }
-    string getContact() const { return contact; }
-    string getCompany() const { return company; }
-    string getAddress() const { return address; }
-    string getService() const { return service; }
+    string getContact() const { return contact; }  
 };
 
 class Employee
@@ -57,15 +54,15 @@ public:
 void printClientTable(const vector<Client> &clients)
 {
     Table table;
-    table.add_row({"ID", "Name", "Contact", "Company", "Address", "Service"});
+    table.add_row({"Client Name", "Contact Person", "Contact Email"});
     for (auto &c : clients)
     {
-        table.add_row({c.getId(), c.getName(), c.getContact(), c.getCompany(), c.getAddress(), c.getService()});
+        table.add_row({c.getId(), c.getName(), c.getContact()});
     }
 
     // Style header
     table[0].format().font_style({FontStyle::bold}).font_align(FontAlign::center).border_bottom("─");
-
+    table[0].format().font_color(Color::cyan);
     // Style rows
     for (size_t i = 1; i < table.size(); ++i)
     {
@@ -113,15 +110,12 @@ vector<Client> readClientsFromExcel(const string &filename)
         auto ws = wb.active_sheet();
         for (auto row : ws.rows(false))
         {
-            if (row[0].to_string() == "ID")
+            if (row[0].to_string() == "Client Name")
                 continue;
             Client c(
                 row[0].to_string(),
                 row[1].to_string(),
-                row[2].to_string(),
-                row[3].to_string(),
-                row[4].to_string(),
-                row[5].to_string());
+                row[2].to_string());
             clients.push_back(c);
         }
     }
@@ -137,21 +131,16 @@ void writeClientsToExcel(const string &filename, const vector<Client> &clients)
     xlnt::workbook wb;
     auto ws = wb.active_sheet();
     ws.title("Clients");
-    ws.cell("A1").value("ID");
-    ws.cell("B1").value("Name");
-    ws.cell("C1").value("Contact");
-    ws.cell("D1").value("Company");
-    ws.cell("E1").value("Address");
-    ws.cell("F1").value("Service");
+    ws.cell("A1").value("Client Name");
+    ws.cell("B1").value("Contact Person");
+    ws.cell("C1").value("Contact Email");
+    
     int row = 2;
     for (auto &c : clients)
     {
         ws.cell("A" + to_string(row)).value(c.getId());
         ws.cell("B" + to_string(row)).value(c.getName());
         ws.cell("C" + to_string(row)).value(c.getContact());
-        ws.cell("D" + to_string(row)).value(c.getCompany());
-        ws.cell("E" + to_string(row)).value(c.getAddress());
-        ws.cell("F" + to_string(row)).value(c.getService());
         row++;
     }
     wb.save(filename);
@@ -196,51 +185,6 @@ void writeemployeeToExcel(const string &filename, const vector<Employee> &employ
     wb.save(filename);
 }
 
-void deleteClient(vector<Client> &clients, vector<Employee> &employee,
-                  const string &clientFile, const string &assignFile)
-{
-    string delId;
-    cout <<bold_blue (">> Enter Client ID to delete: ");
-    getline(cin, delId);
-
-    auto clientIt = find_if(clients.begin(), clients.end(), [&](const Client &c)
-                            { return c.getId() == delId; });
-
-    if (clientIt == clients.end())
-    {
-        cout << red("❌ No client found with that ID.") << endl;
-        return;
-    }
-
-    cout <<green( "Client found:\n");
-    Table info;
-    info.add_row({"ID", "Name", "Contact", "Company", "Address", "Service"});
-    info.add_row({clientIt->getId(), clientIt->getName(), clientIt->getContact(),
-                  clientIt->getCompany(), clientIt->getAddress(), clientIt->getService()});
-    info[0].format().font_style({FontStyle::bold});
-    info[0].format().font_color(Color::cyan);
-    cout << info << endl;
-    
-    char confirm;
-    cout <<blue( ">> Are you sure you want to delete this client and all related employee? ");
-    cout <<bold_magenta("(y/n):");
-    cin >> confirm;
-    cin.ignore();
-
-    if (tolower(confirm) != 'y')
-    {
-        cout << red("❌ Deletion cancelled.") << endl;
-        return;
-    }
-    clients.erase(clientIt);
-    employee.erase(remove_if(employee.begin(), employee.end(), [&](const Employee &a)
-                             { return a.clientId == delId; }),
-                   employee.end());
-    writeClientsToExcel(clientFile, clients);
-    writeemployeeToExcel(assignFile, employee);
-    cout<<endl;
-    cout << green("✅ Client and related employee deleted successfully!\n");
-}
 // style
 void printAppLogo()
 {

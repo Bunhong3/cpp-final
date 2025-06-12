@@ -1,4 +1,3 @@
-
 #include "function.h"
 int main()
 {
@@ -9,10 +8,8 @@ int main()
     vector<string> menu = {
         "Add Client Record",
         "Assign Employee to Client",
-        "Show Clients",
-        "Show Employee",
-        "Delete Client",
-        "Search Client by ID or Name",
+        "Track Client ",
+        "View All Clients",
         "Exit"};
 
     vector<Client> clients = readClientsFromExcel(clientFile);
@@ -49,20 +46,15 @@ int main()
         {
             system("cls");
             printtHeader("📋 Add Client Record");
-            string id, name, contact, company, address, service;
-            cout << "ID: ";
-            getline(cin, id);
-            cout << "Name: ";
+            string name, contact, email;
+            cout << "Enter Client Name    : ";
             getline(cin, name);
-            cout << "Contact: ";
+            cout << "Enter Contact Persion: ";
             getline(cin, contact);
-            cout << "Company: ";
-            getline(cin, company);
-            cout << "Address: ";
-            getline(cin, address);
-            cout << "Service: ";
-            getline(cin, service);
-            clients.emplace_back(id, name, contact, company, address, service);
+            cout << "Enter Contact Email  : ";
+            getline(cin, email);
+
+            clients.emplace_back(name, contact, email);
             writeClientsToExcel(clientFile, clients);
             cout << endl;
             cout << green("✅ Client added successfully!") << endl;
@@ -86,6 +78,12 @@ int main()
             break;
         }
         case 3:
+            system("cls");
+            printHeader("Show Employee");
+            printEmployeeTable(employee);
+            pressEnter();
+            break;
+        case 4:
         {
             system("cls");
             printHeader("Client Lists");
@@ -93,50 +91,12 @@ int main()
             pressEnter();
             break;
         }
-        case 4:
-            system("cls");
-            printHeader("Show Employee");
-            printEmployeeTable(employee);
-            pressEnter();
-            break;
-        case 5:
-            system("cls");
-            printHeader("Dellete Client");
-            deleteClient(clients, employee, clientFile, empFile);
-            pressEnter();
-            break;
-        case 6:
-        {
-            system("cls");
-            printHeader("Search Client by ID or Name");
-
-            string query;
-            cout << bold_blue("Enter Client ID or Name to search: ");
-            getline(cin, query);
-            bool found = false;
-            for (const auto &c : clients)
-            {
-                if (c.getId() == query || c.getName() == query)
-                {
-                    Table result;
-                    result.add_row({"ID", "Name", "Contact", "Company", "Address", "Service"});
-                    result.add_row({c.getId(), c.getName(), c.getContact(), c.getCompany(), c.getAddress(), c.getService()});
-                    result[0].format().font_style({FontStyle::bold});
-                    cout << result << endl;
-                    found = true;
-                    break;
-                }
-            }
-            if (!found)
-                cout << "\033[1;31m❌ No client found with that ID or Name!!\033[0m\n";
-            pressEnter();
-            break;
-        }
+        
         default:
-            cout <<red("Program closed!!\n");
+            cout << red("Program closed!!\n");
             break;
         }
-    } while (option != 7);
+    } while (option != 5);
 
     return 0;
 }
